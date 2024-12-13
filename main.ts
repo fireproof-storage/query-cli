@@ -1,13 +1,13 @@
 import { parseArgs } from "https://deno.land/std/cli/parse_args.ts";
-import { connect } from "https://fireproof.storage/esm/cloud";
-import { fireproof } from "https://fireproof.storage/esm/core";
+import { connect } from "npm:@fireproof/cloud@0.19.118";
+import { fireproof } from "npm:@fireproof/core@0.19.118";
 
 const args = parseArgs(Deno.args, {
   string: ["localName", "remoteName", "shareURL"],
   default: {
     localName: "__z11",
-    remoteName: "todos"
-  }
+    remoteName: "todos",
+  },
 });
 
 // Parse shareURL if provided
@@ -20,17 +20,17 @@ if (args.shareURL) {
       args.localName = params.get("localName") || args.localName;
       args.remoteName = params.get("remoteName") || args.remoteName;
     }
-  } catch (err) {
+  } catch (_err) {
     console.error("Invalid shareURL format");
   }
 }
-
 
 const db = fireproof(args.localName);
 // Initialize connection
 await connect(db, args.remoteName);
 
-var __EVAL = (s: string) => eval(`
+let __EVAL = (s: string) =>
+  eval(`
   void (__EVAL = ${__EVAL.toString()});
   ${s}
 `);
@@ -38,14 +38,18 @@ var __EVAL = (s: string) => eval(`
 async function evaluate(expr: string) {
   try {
     const result = await __EVAL(expr);
-    console.log('<', result);
+    console.log("<", result);
   } catch (err) {
-    console.log(expr, 'ERROR:', err.message);
+    if (err instanceof Error) {
+      console.log(expr, "ERROR:", err.message);
+    }
   }
 }
 
 console.log("JavaScript REPL for Fireproof (press Ctrl+C to exit)");
-console.log("The 'db' variable is available for use. Enter expressions to evaluate:");
+console.log(
+  "The 'db' variable is available for use. Enter expressions to evaluate:",
+);
 
 const history: string[] = [];
 let historyIndex = 0;
@@ -62,7 +66,9 @@ function redrawLine() {
   Deno.stdout.writeSync(new TextEncoder().encode(`\r\x1b[K> ${currentInput}`));
   if (cursorPos < currentInput.length) {
     // Move cursor back to position
-    Deno.stdout.writeSync(new TextEncoder().encode(`\x1b[${currentInput.length - cursorPos}D`));
+    Deno.stdout.writeSync(
+      new TextEncoder().encode(`\x1b[${currentInput.length - cursorPos}D`),
+    );
   }
 }
 
@@ -89,7 +95,9 @@ while (true) {
     } else if (seq === "[B") { // Down arrow
       if (historyIndex < history.length) {
         historyIndex++;
-        currentInput = historyIndex === history.length ? "" : history[historyIndex];
+        currentInput = historyIndex === history.length
+          ? ""
+          : history[historyIndex];
         cursorPos = currentInput.length;
         redrawLine();
       }
@@ -126,12 +134,14 @@ while (true) {
     Deno.exit(0);
   } else if (key === "\x7f") { // Backspace
     if (cursorPos > 0) {
-      currentInput = currentInput.slice(0, cursorPos - 1) + currentInput.slice(cursorPos);
+      currentInput = currentInput.slice(0, cursorPos - 1) +
+        currentInput.slice(cursorPos);
       cursorPos--;
       redrawLine();
     }
   } else {
-    currentInput = currentInput.slice(0, cursorPos) + key + currentInput.slice(cursorPos);
+    currentInput = currentInput.slice(0, cursorPos) + key +
+      currentInput.slice(cursorPos);
     cursorPos++;
     redrawLine();
   }
